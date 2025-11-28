@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nargo
+        uses: noir-lang/noirup@v0.1.4
+        with:
+          toolchain: 1.0.0-beta.3
+
+      - name: Compile funding_proof
+        working-directory: funding_proof
+        run: nargo compile
+
+      - name: Test funding_proof
+        working-directory: funding_proof
+        run: nargo test
+
+      - name: Compile validity_proof
+        working-directory: validity_proof
+        run: nargo compile
+
+      - name: Test validity_proof
+        working-directory: validity_proof
+        run: nargo test
+
+      - name: Compile fulfillment_proof
+        working-directory: fulfillment_proof
+        run: nargo compile
+
+      - name: Test fulfillment_proof
+        working-directory: fulfillment_proof
+        run: nargo test
+
+      - name: Circuit Info
+        run: |
+          echo "=== funding_proof ==="
+          cd funding_proof && nargo info && cd ..
+          echo ""
+          echo "=== validity_proof ==="
+          cd validity_proof && nargo info && cd ..
+          echo ""
+          echo "=== fulfillment_proof ==="
+          cd fulfillment_proof && nargo info
