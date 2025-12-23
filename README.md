@@ -2,6 +2,8 @@
 
 > Noir ZK Circuits for SIP Protocol
 
+**🏆 Winner — [Zypherpunk Hackathon](https://zypherpunk.xyz) NEAR Track ($4,000)**
+
 ---
 
 ## Overview
