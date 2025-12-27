@@ -7,6 +7,26 @@
 
 ---
 
+## Current Focus
+
+**Status:** M15 Complete | M16 Starting (Narrative Capture)
+**Strategy:** Same-chain expansion - circuits ready for Solana native integration
+
+### Phase 4 Circuit Priorities
+
+**M17 (Solana Same-Chain):**
+- Same-chain settlement proofs (no cross-chain overhead)
+- Solana-optimized proof verification
+- Browser proving performance for web wallets
+- Jupiter DEX integration compatibility
+
+**M19+ (Proof Composition):**
+- Halo2/Kimchi integration research
+- Multi-system proof composition
+- Cross-proof verification
+
+---
+
 ## Quick Reference
 
 **Tech Stack:** Noir 1.0.0-beta.15, Barretenberg (UltraHonk), Nargo CLI
@@ -115,6 +135,16 @@ Proves: Solver correctly executed swap
 
 ---
 
+## Same-Chain Considerations (M17)
+
+For Solana same-chain privacy:
+- **No cross-chain oracle needed** - direct on-chain verification
+- **Proof verification cost** - Optimize for Solana compute units
+- **Browser proving** - Mobile wallet UX requires fast proving
+- **Jupiter integration** - Standard swap interface with privacy proofs
+
+---
+
 ## Specifications
 
 Detailed specs in docs-sip:
@@ -141,6 +171,7 @@ Detailed specs in docs-sip:
 - Write comprehensive tests for edge cases
 - Document public/private inputs clearly
 - Keep constraint counts minimal
+- Consider Solana compute limits for verification
 
 **DON'T:**
 - Expose private inputs in circuit interface
@@ -178,4 +209,4 @@ const result = await provider.generateFundingProof({
 
 ---
 
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-27
