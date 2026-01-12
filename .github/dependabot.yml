@@ -4,12 +4,12 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
       day: "monday"
 
   # Cargo (for future Rust dependencies if added)
   # - package-ecosystem: "cargo"
   #   directory: "/"
   #   schedule:
-  #     interval: "daily"
+  #     interval: "weekly"
   #     day: "monday"
