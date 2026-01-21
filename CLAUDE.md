@@ -9,7 +9,7 @@
 
 ## Current Focus
 
-**Status:** M15 Complete | M16 Starting (Narrative Capture)
+**Status:** M16 Complete | M17 Active (Solana Same-Chain)
 **Strategy:** Same-chain expansion - circuits ready for Solana native integration
 
 ### Phase 4 Circuit Priorities
@@ -66,16 +66,15 @@ nargo verify              # Verify proof
 circuits/
 ├── funding_proof/
 │   ├── Nargo.toml
-│   ├── src/main.nr
-│   └── target/funding_proof.json
+│   └── src/main.nr              # Needs: nargo compile
 ├── validity_proof/
 │   ├── Nargo.toml
 │   ├── src/main.nr
-│   └── target/validity_proof.json
+│   └── target/validity_proof.json  ✅ Compiled
 ├── fulfillment_proof/
 │   ├── Nargo.toml
 │   ├── src/main.nr
-│   └── target/fulfillment_proof.json
+│   └── target/fulfillment_proof.json  ✅ Compiled
 ├── README.md
 └── CLAUDE.md
 ```
@@ -209,4 +208,4 @@ const result = await provider.generateFundingProof({
 
 ---
 
-**Last Updated:** 2025-12-27
+**Last Updated:** 2026-01-21

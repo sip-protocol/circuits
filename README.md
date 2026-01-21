@@ -32,19 +32,20 @@ Zero-knowledge proof circuits for the **SIP Protocol** (Shielded Intents Protoco
 circuits/
 ├── funding_proof/
 │   ├── Nargo.toml
-│   ├── src/main.nr
-│   └── target/funding_proof.json
+│   └── src/main.nr
 ├── validity_proof/
 │   ├── Nargo.toml
 │   ├── src/main.nr
-│   └── target/validity_proof.json
+│   └── target/validity_proof.json  ✅ Compiled
 ├── fulfillment_proof/
 │   ├── Nargo.toml
 │   ├── src/main.nr
-│   └── target/fulfillment_proof.json
+│   └── target/fulfillment_proof.json  ✅ Compiled
 ├── README.md
 └── CLAUDE.md
 ```
+
+**Note:** Run `nargo compile` in `funding_proof/` to generate its artifact.
 
 ## Development
 
