@@ -9,8 +9,8 @@
 
 ## Current Focus
 
-**Status:** M16 Complete | M17 Active (Solana Same-Chain)
-**Strategy:** Same-chain expansion - circuits ready for Solana native integration
+**Status:** M17 Complete | M18 Active (Ethereum Same-Chain)
+**Strategy:** Same-chain expansion - circuits ready for multi-chain native integration
 
 ### Phase 4 Circuit Priorities
 
@@ -208,4 +208,4 @@ const result = await provider.generateFundingProof({
 
 ---
 
-**Last Updated:** 2026-01-21
+**Last Updated:** 2026-01-25
