@@ -21,31 +21,30 @@ use std::hash::pedersen_hash;
 use std::hash::blake3;
 
 /// Main entry point for the funding proof circuit
+///
+/// Returns the commitment hash as a public output rather than taking it as input.
+/// This allows the SDK to verify the proof without needing to compute Pedersen hashes.
 fn main(
     // Public inputs
-    commitment_hash: pub [u8; 32],
-    minimum_required: pub u64,
+    minimum_required: pub Field,
     asset_id: pub Field,
 
     // Private inputs (witness)
-    balance: u64,
+    balance: Field,
     blinding: Field,
-) {
+) -> pub [u8; 32] {
     // Constraint 1: Balance must be at least the minimum required
-    assert(balance >= minimum_required, "Insufficient balance");
+    // Using Field comparison - works for values up to ~2^254
+    assert(balance.lt(minimum_required) == false, "Insufficient balance");
 
     // Constraint 2: Compute the Pedersen commitment to (balance, blinding)
-    let balance_field = balance as Field;
-    let commitment = pedersen_hash([balance_field, blinding]);
+    let commitment = pedersen_hash([balance, blinding]);
 
-    // Constraint 3: Verify the commitment hash matches
+    // Constraint 3: Compute and return the commitment hash
     // We hash: commitment || asset_id to bind the commitment to the asset
-    let computed_hash = compute_commitment_hash(commitment, asset_id);
+    let commitment_hash = compute_commitment_hash(commitment, asset_id);
 
-    // Verify the hashes match byte by byte
-    for i in 0..32 {
-        assert(computed_hash[i] == commitment_hash[i], "Commitment hash mismatch");
-    }
+    commitment_hash
 }
 
 /// Compute the commitment hash from commitment and asset_id
@@ -73,78 +72,101 @@ fn compute_commitment_hash(commitment: Field, asset_id: Field) -> [u8; 32] {
 #[test]
 fn test_valid_funding_proof() {
     // Test case: balance = 100, minimum = 50
-    let balance: u64 = 100;
-    let minimum_required: u64 = 50;
-    let blinding = 12345 as Field;
-    let asset_id = 1 as Field;
+    let balance: Field = 100;
+    let minimum_required: Field = 50;
+    let blinding: Field = 12345;
+    let asset_id: Field = 1;
 
-    // Compute expected commitment hash
-    let balance_field = balance as Field;
-    let commitment = pedersen_hash([balance_field, blinding]);
-    let commitment_hash = compute_commitment_hash(commitment, asset_id);
+    // Execute the circuit - it should return the commitment hash
+    let commitment_hash = main(minimum_required, asset_id, balance, blinding);
 
-    // This should pass
-    main(commitment_hash, minimum_required, asset_id, balance, blinding);
+    // Verify it returned a hash (not all zeros)
+    let mut has_nonzero = false;
+    for i in 0..32 {
+        if commitment_hash[i] != 0 {
+            has_nonzero = true;
+        }
+    }
+    assert(has_nonzero, "Commitment hash should not be all zeros");
 }
 
 #[test]
 fn test_exact_balance_passes() {
     // Test case: balance exactly equals minimum
-    let balance: u64 = 50;
-    let minimum_required: u64 = 50;
-    let blinding = 67890 as Field;
-    let asset_id = 2 as Field;
+    let balance: Field = 50;
+    let minimum_required: Field = 50;
+    let blinding: Field = 67890;
+    let asset_id: Field = 2;
 
-    let balance_field = balance as Field;
-    let commitment = pedersen_hash([balance_field, blinding]);
-    let commitment_hash = compute_commitment_hash(commitment, asset_id);
-
-    main(commitment_hash, minimum_required, asset_id, balance, blinding);
+    // Should succeed and return a hash
+    let _commitment_hash = main(minimum_required, asset_id, balance, blinding);
 }
 
 #[test(should_fail_with = "Insufficient balance")]
 fn test_insufficient_balance_fails() {
     // Test case: balance < minimum should fail
-    let balance: u64 = 40;
-    let minimum_required: u64 = 50;
-    let blinding = 11111 as Field;
-    let asset_id = 1 as Field;
+    let balance: Field = 40;
+    let minimum_required: Field = 50;
+    let blinding: Field = 11111;
+    let asset_id: Field = 1;
 
-    let balance_field = balance as Field;
-    let commitment = pedersen_hash([balance_field, blinding]);
-    let commitment_hash = compute_commitment_hash(commitment, asset_id);
-
-    main(commitment_hash, minimum_required, asset_id, balance, blinding);
+    // Should fail because balance < minimum_required
+    let _commitment_hash = main(minimum_required, asset_id, balance, blinding);
 }
 
-#[test(should_fail_with = "Commitment hash mismatch")]
-fn test_wrong_commitment_fails() {
-    // Test case: wrong commitment hash should fail
-    let balance: u64 = 100;
-    let minimum_required: u64 = 50;
-    let blinding = 12345 as Field;
-    let asset_id = 1 as Field;
+#[test]
+fn test_different_blinding_produces_different_hash() {
+    // Test that different blinding factors produce different commitment hashes
+    let balance: Field = 100;
+    let minimum_required: Field = 50;
+    let blinding1: Field = 12345;
+    let blinding2: Field = 99999;
+    let asset_id: Field = 1;
 
-    // Use a completely wrong commitment hash
-    let wrong_hash: [u8; 32] = [0; 32];
+    let hash1 = main(minimum_required, asset_id, balance, blinding1);
+    let hash2 = main(minimum_required, asset_id, balance, blinding2);
 
-    main(wrong_hash, minimum_required, asset_id, balance, blinding);
+    // Hashes should be different
+    let mut hashes_differ = false;
+    for i in 0..32 {
+        if hash1[i] != hash2[i] {
+            hashes_differ = true;
+        }
+    }
+    assert(hashes_differ, "Different blindings should produce different hashes");
 }
 
-#[test(should_fail_with = "Commitment hash mismatch")]
-fn test_wrong_blinding_fails() {
-    // Test case: correct balance but wrong blinding should fail
-    let balance: u64 = 100;
-    let minimum_required: u64 = 50;
-    let correct_blinding = 12345 as Field;
-    let wrong_blinding = 99999 as Field;
-    let asset_id = 1 as Field;
+#[test]
+fn test_large_values_near_scale() {
+    // Test with NEAR-scale values (24 decimals)
+    // 1.5 NEAR = 1500000000000000000000000 yoctoNEAR
+    // This would overflow u64 but works with Field
+    let balance: Field = 1500000000000000000000000;
+    let minimum_required: Field = 1000000000000000000000000; // 1 NEAR
+    let blinding: Field = 999999999;
+    let asset_id: Field = 0x4e454152; // "NEAR" as hex
 
-    // Compute hash with correct blinding
-    let balance_field = balance as Field;
-    let commitment = pedersen_hash([balance_field, correct_blinding]);
-    let commitment_hash = compute_commitment_hash(commitment, asset_id);
+    // Should succeed - balance > minimum
+    let commitment_hash = main(minimum_required, asset_id, balance, blinding);
 
-    // Try to prove with wrong blinding
-    main(commitment_hash, minimum_required, asset_id, balance, wrong_blinding);
+    // Verify hash is valid
+    let mut has_nonzero = false;
+    for i in 0..32 {
+        if commitment_hash[i] != 0 {
+            has_nonzero = true;
+        }
+    }
+    assert(has_nonzero, "Commitment hash should not be all zeros");
+}
+
+#[test(should_fail_with = "Insufficient balance")]
+fn test_large_values_insufficient() {
+    // Test insufficient balance with NEAR-scale values
+    let balance: Field = 500000000000000000000000; // 0.5 NEAR
+    let minimum_required: Field = 1000000000000000000000000; // 1 NEAR
+    let blinding: Field = 12345;
+    let asset_id: Field = 0x4e454152;
+
+    // Should fail - balance < minimum
+    let _hash = main(minimum_required, asset_id, balance, blinding);
 }
