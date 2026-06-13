@@ -30,7 +30,7 @@
 ## Quick Reference
 
 **Tech Stack:** Noir 1.0.0-beta.15, Barretenberg (UltraHonk), Nargo CLI
-**Status:** Implemented - 3 circuits, 19 tests passing
+**Status:** Implemented - 3 circuits, 18 tests passing
 
 **Key Commands:**
 ```bash
@@ -52,11 +52,11 @@ nargo verify              # Verify proof
 
 | Circuit | Purpose | ACIR Opcodes | Tests |
 |---------|---------|--------------|-------|
-| funding_proof | Prove balance >= minimum without revealing balance | 972 | 5 |
+| funding_proof | Prove balance >= minimum without revealing balance | 972 | 4 |
 | validity_proof | Prove intent authorization without revealing sender | 1113 | 6 |
 | fulfillment_proof | Prove fulfillment correctness with oracle attestation | 1691 | 8 |
 
-**Total: 19 tests passing**
+**Total: 18 tests passing**
 
 ---
 
